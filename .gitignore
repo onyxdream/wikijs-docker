@@ -1,1 +1,4 @@
-docker/.env
+.env
+nginx/ssl/*
+certs
+nginx/conf.d

@@ -1,0 +1,173 @@
+services:
+  psql:
+    image: postgres:16.11-alpine3.22
+    profiles: ["localdb"]
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - pg_volume:/var/lib/postgresql/data:rw
+    networks:
+      - data_network
+      - monitor_network
+    restart: unless-stopped
+
+  wikijs:
+    image: ghcr.io/requarks/wiki:2.5
+    environment:
+      - DB_TYPE=${DB_TYPE}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+    networks:
+      - app_network
+      - data_network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - app_network
+      - monitor_network
+
+  ldap:
+    image: osixia/openldap:1.5.0
+    restart: unless-stopped
+    profiles: ["ldap"]
+    environment:
+      LDAP_BASE_DN: ${LDAP_BASE_DN}
+      LDAP_ORGANISATION: ${ORGANIZATION}
+      LDAP_DOMAIN: ${DOMAIN}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
+      LDAP_TLS: "false"
+    volumes:
+      - ldap_data:/var/lib/ldap
+      - ldap_config:/etc/ldap/slapd.d
+      - ./ldap/bootstrap.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-bootstrap.ldif:ro
+    networks:
+      - app_network
+    command: --copy-service
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    profiles: ["ldap"]
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+      PHPLDAPADMIN_HTTPS: "false"
+    networks:
+      - app_network
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+    depends_on:
+      - ldap
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - monitor_network
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    networks:
+      - monitor_network
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/host/rootfs"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    networks:
+      - monitor_network
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASS}@psql:5432/${DB_NAME}?sslmode=disable"
+    networks:
+      - monitor_network
+
+  nginx-prometheus-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    restart: unless-stopped
+    networks:
+      monitor_network:
+        ipv4_address: 172.22.0.10
+    command: ["-nginx.scrape-uri", "http://nginx/nginx_status"]
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    networks:
+      - app_network
+      - monitor_network
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  pg_volume:
+    name: pg_volume
+    driver: local
+  ldap_data:
+    driver: local
+  ldap_config:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  app_network:
+    name: app_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  data_network:
+    name: data_network
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+  monitor_network:
+    name: monitor_network
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
