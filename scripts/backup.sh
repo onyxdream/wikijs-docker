@@ -1,12 +1,14 @@
 #!/bin/bash
 
-backup_path="/home/cursor/backups"
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
+backup_path="$PROJECT_ROOT/backups"
 timestamp=$(date +"%Y%m%d%H%M%S")
 backup_file="$backup_path/wikijs_backup_$timestamp.dump"
 rotation_limit=5
 
 set -a
-source ../.env
+source $PROJECT_ROOT/.env
 set +a
 
 if [ -f "$backup_file" ]; then

@@ -116,16 +116,27 @@ fi
 
 # check if docker compose is down, if not, restart
 DOCKER_OUTPUT=$(docker compose ps | sed '1d')
+PROFILES=""
+
+if [ "$LDAP_TEST" == "true" ]; then
+    PROFILES+=" --profile ldap"
+fi
+
+if [ "$LOCAL_DB" == "true" ]; then
+    PROFILES+=" --profile localdb"
+fi
+
+DOCKER_COMMAND="docker compose $PROFILES"
 
 if [ -n "$DOCKER_OUTPUT" ]; then
     echo "Docker Compose is already running. Restarting the services..."
     sleep 1
-    docker compose --profile ldap --profile localdb down
+    eval "$DOCKER_COMMAND down"
     sleep 1
-    docker compose --profile ldap --profile localdb up -d
+    eval "$DOCKER_COMMAND up -d"
 else
     echo "Starting Docker Compose services..."
-    docker compose --profile ldap --profile localdb up -d
+    eval "$DOCKER_COMMAND up -d"
 fi
 
 # final message, deployment completed, notice the user about undeployment, restore scripts, http endpoints, and ca certificate (make it trusted to avoid security warnings on browser)

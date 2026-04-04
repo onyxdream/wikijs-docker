@@ -2,3 +2,4 @@
 nginx/ssl/*
 certs
 nginx/conf.d
+backups

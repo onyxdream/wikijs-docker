@@ -26,11 +26,16 @@ if [ ! -d "$NGINX_SSL_PATH" ]; then
     mkdir -p "$NGINX_SSL_PATH"
 fi
 
+# if there is no existing ca certificate or ca private key
+if [ ! -f "$CERT_FILES_PATH/ca.crt" ] || [ ! -f "$CERT_FILES_PATH/ca.key" ]; then
+    # generate ca private key
+    openssl genrsa -out "$CERT_FILES_PATH/ca.key" 4096
+    # generate ca certificate
+    openssl req -x509 -new -nodes -key "$CERT_FILES_PATH/ca.key" -sha256 -days 3650 -out "$CERT_FILES_PATH/ca.crt" -subj "/C=ES/ST=Madrid/L=Madrid/O=WikiJS Docker CA by Onyxdream/OU=Infra/CN=$DOMAIN"
+fi
 
-# generate ca private key
-openssl genrsa -out "$CERT_FILES_PATH/ca.key" 4096
-# generate ca certificate
-openssl req -x509 -new -nodes -key "$CERT_FILES_PATH/ca.key" -sha256 -days 3650 -out "$CERT_FILES_PATH/ca.crt" -subj "/C=ES/ST=Madrid/L=Madrid/O=$ORGANIZATION/OU=Infra/CN=$DOMAIN"
+
+
 
 # generate nginx private key
 openssl genrsa -out "$CERT_FILES_PATH/nginx/$SSL_CERT_NAME.key" 4096
