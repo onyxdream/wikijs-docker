@@ -139,13 +139,20 @@ else
     eval "$DOCKER_COMMAND up -d"
 fi
 
-# final message, deployment completed, notice the user about undeployment, restore scripts, http endpoints, and ca certificate (make it trusted to avoid security warnings on browser)
+echo -e '\n\033[1;32m_ _ _ _ _  _ _  _ ____    ___  ____ ____ _  _ ____ ____ \033[0m'
+echo -e '\033[1;32m| | | | |_/  |  | [__  __ |  \ |  | |    |_/  |___ |__/ \033[0m'
+echo -e '\033[1;32m|_|_| | | \_ | _| ___]    |__/ |__| |___ | \_ |___ |  \ \033[0m'
+echo "--------------------------------------------------"
+echo -e '\033[1;35m> https://github.com/onyxdream/wikijs-docker\033[0m'
 echo -e '\n\033[1;32m[+] Deployment completed successfully.\033[0m'
-echo "To undeploy, run 'deploy.sh down'."
+echo "- To undeploy, run 'deploy.sh down'."
 echo "--------------------------------------"
 echo -e '\033[1;33m[+] http://wiki.'"$DOMAIN"' - Wiki.js\033[0m'
 echo -e '\033[1;33m[+] http://grafana.'"$DOMAIN"' - Grafana\033[0m'
+if [ "$LDAP_TEST" == "true" ]; then
+    echo -e '\033[1;33m[+] http://localhost:8081 - PhpLdapAdmin\033[0m'
+fi
 echo "--------------------------------------"
-echo "To restore a backup, run 'scripts/restore.sh <backup_file>'."
-echo "Please add the $PROJECT_ROOT/certs/ca.crt file to your trusted root to avoid security warnings on your browser when accessing the wiki and grafana with HTTPS."
-echo "!> Any claim please open an issue on https://github.com/onyxdream/wikijs-docker"
+echo "- To backup your data, run 'scripts/backup.sh'."
+echo "- To restore a backup, run 'scripts/restore.sh <backup_file>'."
+echo -e '\033[1;33m[!] Please add the $PROJECT_ROOT/certs/ca.crt file to your trusted root to avoid security warnings on your browser when accessing the wiki and grafana with HTTPS.\033[0m'
