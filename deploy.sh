@@ -92,7 +92,7 @@ fi
 # check if the domain of the certificate matches the domain in the .env file, if not, generate a new certificate with the correct domain information
 CERT_INFO=$(openssl x509 -in "$SSL_CERT_FILE" -noout -text)
 
-if ! echo "$CERT_INFO" | grep "CN=$DOMAIN" &> /dev/null; then
+if ! echo "$CERT_INFO" | grep "wiki.$DOMAIN" &> /dev/null; then
     echo "The domain of the SSL certificate does not match the domain in the .env file. Generating a new certificate with the correct domain information..."
     bash $PROJECT_ROOT/scripts/generate-certs.sh
 else
