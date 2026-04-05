@@ -153,6 +153,4 @@ if [ "$LDAP_TEST" == "true" ]; then
     echo -e '\033[1;33m[+] http://localhost:8081 - PhpLdapAdmin\033[0m'
 fi
 echo "--------------------------------------"
-echo "- To backup your data, run 'scripts/backup.sh'."
-echo "- To restore a backup, run 'scripts/restore.sh <backup_file>'."
-echo -e '\033[1;33m[!] Please add the $PROJECT_ROOT/certs/ca.crt file to your trusted root to avoid security warnings on your browser when accessing the wiki and grafana with HTTPS.\033[0m'
+echo "Check README.md for more information about the deployment and configuration of the services."

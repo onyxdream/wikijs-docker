@@ -8,8 +8,6 @@ set +a
 source "$PROJECT_ROOT/.env"
 set -a
 
-
-
 CERT_FILES_PATH="$PROJECT_ROOT/certs"
 NGINX_SSL_PATH="$PROJECT_ROOT/nginx/ssl"
 
@@ -34,17 +32,12 @@ if [ ! -f "$CERT_FILES_PATH/ca.crt" ] || [ ! -f "$CERT_FILES_PATH/ca.key" ]; the
     openssl req -x509 -new -nodes -key "$CERT_FILES_PATH/ca.key" -sha256 -days 3650 -out "$CERT_FILES_PATH/ca.crt" -subj "/C=ES/ST=Madrid/L=Madrid/O=WikiJS Docker CA by Onyxdream/OU=Infra/CN=$DOMAIN"
 fi
 
-
-
-
 # generate nginx private key
 openssl genrsa -out "$CERT_FILES_PATH/nginx/$SSL_CERT_NAME.key" 4096
 
 # generate nginx certificate signing request
-echo crt
 openssl req -new -key "$CERT_FILES_PATH/nginx/$SSL_CERT_NAME.key" -out "$CERT_FILES_PATH/nginx/$SSL_CERT_NAME.csr" -subj "/C=ES/ST=Madrid/L=Madrid/O=$ORGANIZATION/OU=Infra/CN=$DOMAIN"
 
-echo san
 # generate SAN .ext file for subdomains
 cat > "$CERT_FILES_PATH/nginx/$SSL_CERT_NAME.ext" <<EOL
 subjectAltName = @alt_names

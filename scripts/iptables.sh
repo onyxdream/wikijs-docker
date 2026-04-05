@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# This is an example script to set up iptables rules for the wiki-js docker host. 
 LAN_NETWORK="192.168.70.0/23"
 
 iptables -F
