@@ -120,6 +120,7 @@ PROFILES=""
 
 if [ "$LDAP_TEST" == "true" ]; then
     PROFILES+=" --profile ldap"
+    bash $PROJECT_ROOT/scripts/ldap-conf.sh
 fi
 
 if [ "$LOCAL_DB" == "true" ]; then

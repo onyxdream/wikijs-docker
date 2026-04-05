@@ -3,3 +3,4 @@ nginx/ssl/*
 certs
 nginx/conf.d
 backups
+ldap/bootstrap.ldif
