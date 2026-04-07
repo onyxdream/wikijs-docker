@@ -4,7 +4,7 @@ set -e
 
 # if the user is not root, exit
 user=$(whoami)
-if [ ! "$user" = "root"]; then
+if [ "$user" != "root" ]; then
     echo "You must run this script as root."
     exit 1
 fi
