@@ -21,4 +21,5 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 systemctl start docker
 systemctl enable docker
 usermod -aG docker $USER
+sudo apt install docker-compose -y
 echo "Docker installation complete, log out/in or run: newgrp docker"
